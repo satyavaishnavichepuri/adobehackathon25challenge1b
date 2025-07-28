@@ -1,5 +1,5 @@
 """
-Output Formatter for generating the required JSON output format (stripped to match spec)
+Output Formatter for generating the required JSON output format (limited to top 5 sections everywhere)
 """
 
 import json
@@ -27,6 +27,7 @@ class OutputFormatter:
         - Only metadata keys requested
         - Only document names (no paths/pages) in input_documents
         - Only requested fields in extracted_sections and subsection_analysis
+        - Limit both sections to top 5 (by importance_rank)
         """
 
         # Base output structure
@@ -44,8 +45,9 @@ class OutputFormatter:
         # Sort sections by importance rank
         output_sections = sorted(ranked_sections, key=lambda x: x.importance_rank)
 
-        # Fill extracted sections (only required fields)
-        for scored_section in output_sections:
+        # Only keep top 5 for extracted_sections
+        top_extracted_sections = output_sections[:5]
+        for scored_section in top_extracted_sections:
             section = scored_section.section
             output["extracted_sections"].append({
                 "document": section.document_name,
@@ -54,9 +56,9 @@ class OutputFormatter:
                 "page_number": section.page_number
             })
 
-        # Fill subsection analysis (top 10, only required fields)
-        top_sections = output_sections[:min(10, len(output_sections))]
-        for scored_section in top_sections:
+        # Only keep top 5 for subsection_analysis as well
+        top_subsections = output_sections[:5]
+        for scored_section in top_subsections:
             section = scored_section.section
             output["subsection_analysis"].append({
                 "document": section.document_name,
